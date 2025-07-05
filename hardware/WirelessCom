@@ -1,0 +1,67 @@
+import network
+import socket
+import time
+import _thread
+import ds
+
+page_content = "100"  # Global page content
+
+
+def connect_to_wifi(ssid, password):
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(ssid, password)
+    while not wlan.isconnected():
+        pass
+    print('Connected to Wi-Fi:', wlan.ifconfig())
+
+def create_ap(ssid="ESP32_AP", password="12345678"):
+    ap = network.WLAN(network.AP_IF)
+    ap.active(True)
+    ap.config(essid=ssid, password=password, authmode=3)  # WPA2
+    while not ap.active():
+        pass
+    print("Access Point created:", ap.ifconfig())
+    return ap.ifconfig()[0]  # Return IP address
+
+def update_page_content(new_text):
+    global page_content
+    page_content = new_text
+
+def start_server():
+    addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
+    s = socket.socket()
+    s.bind(addr)
+    s.listen(1)
+    print('Web server started at http://{}'.format(addr[0]))
+
+    s.settimeout(0.5)  # Allow loop to be non-blocking
+
+    while True:
+        try:
+            cl, addr = s.accept()
+            print('Client connected from', addr)
+            request = cl.recv(1024)
+
+            response = f"""\
+                <p1>{page_content}</p1>
+                """
+            cl.send(response)
+            cl.close()
+        except OSError:
+            # No connection, just loop again
+            pass
+
+        # You can update page_content from elsewhere now
+        # For example:
+
+
+connect_to_wifi("Cubi_Space", "Jsv$2023")
+_thread.start_new_thread(start_server, ())
+
+while True:
+    d = ds.get_distance()
+    update_page_content(f"{d}")
+    time.sleep(0.01)
+
+#This could be used if the device is not connected to the laptop by a wire else serial data transmition is better due to low latancy - swadheen
