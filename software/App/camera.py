@@ -1,19 +1,23 @@
 import cv2
 
+# Initialize video capture (0 for default webcam)
 cap = cv2.VideoCapture(0)
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
-        # Optional: Perform operations on the frame (e.g., convert to grayscale)
-        # gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+def capture(e):
+# Check if camera opened successfully
+    if not cap.isOpened():
+        print("Error: Could not open camera.")
+    else:
+        # Capture a single frame
+        ret, frame = cap.read()
 
-    cv2.imshow('Live Feed', frame) # Display the frame
-        # cv2.imshow('Grayscale Feed', gray_frame) # Display processed frame
+        # Check if frame was captured successfully
+        if ret:
+            # Save the captured frame
+            cv2.imwrite("img.jpg", frame)
+            print("Image captured and saved as captured_image.jpg")
+        else:
+            print("Error: Could not read frame.")
 
-    if cv2.waitKey(1) & 0xFF == ord('q'): # Press 'q' to quit
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+    # Release the camera
+    cap.release()
